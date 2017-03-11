@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title><%=title%></title>
+        <script type="text/javascript" src="/../js/jquery-1.10.2.min.js"></script>
+        <link rel="stylesheet" href="/../css/style.css">
+    </head>
+<body>
+
+<input type="text" class="text">
+<div class="btn" onclick="search()"></div>
+
+<div class="data">
+                       
+    <% if(data.length){ 
+                    
+        for(var i = 0;i < data.length;i++) { %>
+     
+            <div>
+                <div><%=(i+1)%></div>
+                <div><%=data[i].name%></div>
+            </div>
+
+        <% }
+    }else{ %>
+
+     <div>
+        <div colspan="5">No Data</div>
+     </div>
+
+    <% } %>
+
+</div>
+
+<div class="page-data">
+     <ul class="err-area"></ul>
+</div>
+
+<script>
+  
+  //something here?
+
+</script>
+</body>
+</html>
