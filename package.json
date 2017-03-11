@@ -2,10 +2,11 @@
   "name": "startup-bygden",
   "version": "0.0.1",
   "dependencies": {
-    "express": "3.0.x"
+    "express": "3.0.x",
+    "sequelize": "^3.30.2"
   },
-  "engines" : {
-    "node" : "*",
-    "npm" : "*"
+  "engines": {
+    "node": "*",
+    "npm": "*"
   }
 }
