@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/ljungren/startup-bygden/issues"
   },
-  "homepage": "https://github.com/ljungren/startup-bygden#readme"
+  "homepage": "https://github.com/ljungren/startup-bygden#readme",
+  "dependencies": {
+    "request": "^2.81.0",
+    "x2js": "^3.1.0"
+  }
 }
