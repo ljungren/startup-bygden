@@ -3,7 +3,10 @@
 
 var db      = require('./models');
 const readline = require('readline');
-
+var express = require('express');
+var app = express(); 
+var path = require('path'); 
+var bodyParser = require('body-parser');
 var http = require('http');
 var port = process.env.PORT || 8000;
 var utm = require('utm');
@@ -14,21 +17,31 @@ var counter = 0;
 
 db.sequelize.sync().then(function() {
 //db.sequelize.sync({force: true}).then(function() {
-  http.createServer(function (req, res) {
 
-  	// increment the counter for each visitor request
+  /*Set EJS template Engine*/
+  app.set('views','./views');
+  app.set('view engine','ejs');
 
-    var path = req.url;
-    console.log("requested=" + path + " counter=" + counter);
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(bodyParser.urlencoded({ extended: true })); //support x-www-form-urlencoded
+  app.use(bodyParser.json());
 
-    res.writeHead(200, {'Content-Type': 'text/html'}); // prepare response headers
+  // index page 
+  app.get('/', function(req, res) {
+    res.render('index', {
+      title: 'StartUp-Bygden',
+      data: {
+        name: "Namn på bostad",
+        city: "Umeå", 
+        description: "Här bodde familjen andersson för miljarder år sen", 
+        imageURL: "bild.jpg"
+      }
+    });
+  });
 
-    if (path == "/") {
-    	res.end("Welcome to startup-bygden! Find your startup spot in bygden!");
-
-    } else if (path == "/importmunicipalities") {
-
-      var rd = readline.createInterface({
+  app.get('/importmunicipalities', function(req, res) {
+      
+    var rd = readline.createInterface({
         input: fs.createReadStream('./data/internet.csv'),
         output: process.stdout,
         console: false
@@ -48,60 +61,62 @@ db.sequelize.sync().then(function() {
 
           //municipality.save()
       });
+  });
 
-    } else if (path == "/seemunicipalities") {
-      var data = db.Municipality.findAll().then(function(munic) {
-        var data = JSON.stringify(munic)
-        res.end(data); // send response and close connection
-      })
-    } else if (path == "/importsquares") {
+  app.get('/seemunicipalities', function(req, res) {
+    var data = db.Municipality.findAll().then(function(munic) {
+      var data = JSON.stringify(munic)
+      res.end(data); // send response and close connection
+    })
+  });
 
-        let obj, pop;
-        let easting, northing, LatLon, latitude, longitude;
+  app.get('/importsquares', function(req, res) {
+    let obj, pop;
+    let easting, northing, LatLon, latitude, longitude;
 
-        fs.readFile('./density.json', 'utf8', (err, jsonData) => {
-          if (err) throw err;
+    fs.readFile('./density.json', 'utf8', (err, jsonData) => {
+      if (err) throw err;
 
-          obj = JSON.parse(jsonData);
+      obj = JSON.parse(jsonData);
 
-          var size = Object.keys(obj.features).length;
+      var size = Object.keys(obj.features).length;
 
-          for (let i = 0; i < size; i++) {
-            if(obj.features[i].geometry!=null){
-              let pop = parseInt(obj.features[i].properties.Pop);
+      for (let i = 0; i < size; i++) {
+        if(obj.features[i].geometry!=null){
+          let pop = parseInt(obj.features[i].properties.Pop);
 
-              console.log(pop);
-              //console.log(obj.features[0].geometry.coordinates);*/
+          console.log(pop);
+          //console.log(obj.features[0].geometry.coordinates);*/
 
-              let coords = obj.features[i].geometry.coordinates[0].length - 1;
+          let coords = obj.features[i].geometry.coordinates[0].length - 1;
 
-              for(let j = 0; j < coords; j++ ){
+          for(let j = 0; j < coords; j++ ){
 
-                easting = obj.features[i].geometry.coordinates[0][j][0];
-                northing = obj.features[i].geometry.coordinates[0][j][1];
+            easting = obj.features[i].geometry.coordinates[0][j][0];
+            northing = obj.features[i].geometry.coordinates[0][j][1];
 
-                //console.log(easting + " " + northing);
-                LatLon = utm.toLatLon(easting, northing, 33, '', true, true);
+            //console.log(easting + " " + northing);
+            LatLon = utm.toLatLon(easting, northing, 33, '', true, true);
 
-                latitude += LatLon.latitude;
-                longitude += LatLon.longitude;
-              }
-
-              midLat = latitude / coords;
-              midLong = longitude / coords;
-
-              latitude = 0;
-              longitude = 0;
-
-            }
+            latitude += LatLon.latitude;
+            longitude += LatLon.longitude;
           }
 
-        });
+          midLat = latitude / coords;
+          midLong = longitude / coords;
 
+          latitude = 0;
+          longitude = 0;
 
-    }
+        }
+      }
 
-  }).listen(port);
+    });
+  });
+
+  app.listen(port);
+  console.log('Server running at http://127.0.0.1:' + port);
+
 });
 
 function cleanInternetConnection(s) {
@@ -143,5 +158,3 @@ function latLonToMunicipality (lat, lon) {
   })
 }
 
-// console info message
-console.log('Server running at http://127.0.0.1:' + port);
