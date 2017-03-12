@@ -70,7 +70,9 @@ db.sequelize.sync().then(function() {
             if(obj.features[i].geometry!=null){
               let pop = parseInt(obj.features[i].properties.Pop);
 
-              console.log(pop);
+              let square = db.Squares.build({
+                population: pop
+              })
               //console.log(obj.features[0].geometry.coordinates);*/
 
               let coords = obj.features[i].geometry.coordinates[0].length - 1;
@@ -80,8 +82,13 @@ db.sequelize.sync().then(function() {
                 easting = obj.features[i].geometry.coordinates[0][j][0];
                 northing = obj.features[i].geometry.coordinates[0][j][1];
 
+
+
                 //console.log(easting + " " + northing);
                 LatLon = utm.toLatLon(easting, northing, 33, '', true, true);
+
+                square["c" + (j+1) + "Lat"] = cleanPosition(LatLon.latitude);
+                square["c" + (j+1) + "Lon"] = cleanPosition(LatLon.longitude);
 
                 latitude += LatLon.latitude;
                 longitude += LatLon.longitude;
@@ -89,6 +96,11 @@ db.sequelize.sync().then(function() {
 
               midLat = latitude / coords;
               midLong = longitude / coords;
+
+              square.cMidLat = cleanPosition(LatLon.latitude);
+              square.cMidLon = cleanPosition(LatLon.longitude);
+
+              square.save()
 
               latitude = 0;
               longitude = 0;
@@ -106,6 +118,10 @@ db.sequelize.sync().then(function() {
 
 function cleanInternetConnection(s) {
   return parseFloat(s.replace('%','').replace(' ', '').replace(',','.'));
+}
+
+function cleanPosition(p) {
+  return parseFloat(p);
 }
 
 function latLonToMunicipality (lat, lon) {

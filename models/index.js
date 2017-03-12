@@ -42,7 +42,8 @@ if (!global.hasOwnProperty('db')) {
   global.db = {
     Sequelize: Sequelize,
     sequelize: sequelize,
-    Municipality:      sequelize.import(__dirname + '/municipality')
+    Municipality:      sequelize.import(__dirname + '/municipality'),
+    Squares:      sequelize.import(__dirname + '/squares')
     // add your other models here
   }
 
